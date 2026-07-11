@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from scraper.user_agents import get_random_user_agent
 from bs4 import BeautifulSoup
 import requests
 
@@ -6,9 +7,7 @@ import requests
 class BaseScraper(ABC):
 
     def __init__(self, headers=None, timeout=10):
-        self.headers = headers or {
-            "User-Agent": "Mozilla/5.0"
-        }
+        self.headers = headers or get_random_user_agent()
         self.timeout = timeout
 
     def fetch_page(self, url):
