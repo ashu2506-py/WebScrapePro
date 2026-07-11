@@ -1,4 +1,11 @@
-from scraper.user_agents import get_random_user_agent
+import time
 
-for _ in range(5):
-    print(get_random_user_agent())
+from scraper.rate_limiter import RateLimiter
+
+limiter = RateLimiter(delay=1)
+
+start = time.time()
+
+for i in range(3):
+    limiter.wait("https://www.amazon.in/product")
+    print(f"Request {i+1}: {time.time() - start:.2f}s")
