@@ -1,21 +1,22 @@
-from scraper.retry import retry
+from database.db import SessionLocal
+from database.crud import create_site, create_product
 
-counter = 0
+db = SessionLocal()
 
+site = create_site(
+    db,
+    "Amazon",
+    "https://amazon.in"
+)
 
-@retry(max_attempts=4)
-def demo():
+product = create_product(
+    db=db,
+    site=site,
+    name="Apple iPhone 16 Pro",
+    product_url="https://amazon.in/iphone16pro",
+    current_price=119999
+)
 
-    global counter
-
-    counter += 1
-
-    print(f"Attempt {counter}")
-
-    if counter < 4:
-        raise Exception("Temporary Error")
-
-    return "Success"
-
-
-print(demo())
+print(product.id)
+print(product.name)
+print(product.current_price)
