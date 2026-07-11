@@ -1,11 +1,21 @@
-import time
+from scraper.retry import retry
 
-from scraper.rate_limiter import RateLimiter
+counter = 0
 
-limiter = RateLimiter(delay=1)
 
-start = time.time()
+@retry(max_attempts=4)
+def demo():
 
-for i in range(3):
-    limiter.wait("https://www.amazon.in/product")
-    print(f"Request {i+1}: {time.time() - start:.2f}s")
+    global counter
+
+    counter += 1
+
+    print(f"Attempt {counter}")
+
+    if counter < 4:
+        raise Exception("Temporary Error")
+
+    return "Success"
+
+
+print(demo())

@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from scraper.user_agents import get_random_user_agent
 from scraper.rate_limiter import RateLimiter
+from scraper.retry import retry
 from bs4 import BeautifulSoup
 import requests
 
@@ -13,6 +14,7 @@ class BaseScraper(ABC):
         self.headers = headers or get_random_user_agent()
         self.timeout = timeout
 
+    @retry(max_attempts=3)
     def fetch_page(self, url):
 
         rate_limiter.wait(url)
