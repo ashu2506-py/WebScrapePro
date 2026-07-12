@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from datetime import datetime
 
 from database.models import (
     Site,
@@ -39,16 +40,17 @@ def create_site(
     return site
 
 
+
+
 def create_product(
     db: Session,
     site: Site,
     name: str,
     product_url: str,
     current_price: float,
-    ):
+):
     """
-    Create a product if it doesn't exist.
-    If it exists, update its current price.
+    Create or update a product and maintain price history.
     """
 
     product = (
@@ -59,10 +61,20 @@ def create_product(
 
     if product:
 
-        product.current_price = current_price
+        # Update only if price changed
+        if product.current_price != current_price:
 
-        db.commit()
-        db.refresh(product)
+            product.current_price = current_price
+            product.last_updated = datetime.utcnow()
+
+            db.commit()
+            db.refresh(product)
+
+            add_price_history(
+                db=db,
+                product=product,
+                price=current_price
+            )
 
         return product
 
@@ -71,10 +83,49 @@ def create_product(
         product_url=product_url,
         current_price=current_price,
         site_id=site.id,
+        last_updated=datetime.utcnow(),
     )
 
     db.add(product)
     db.commit()
     db.refresh(product)
 
+    add_price_history(
+        db=db,
+        product=product,
+        price=current_price
+    )
+
     return product
+
+
+def add_price_history(
+    db: Session,
+    product: Product,
+    price: float,
+):
+    """
+    Add a price history record only if the price changed.
+    """
+
+    latest = (
+        db.query(PriceHistory)
+        .filter(PriceHistory.product_id == product.id)
+        .order_by(PriceHistory.recorded_at.desc())
+        .first()
+    )
+
+    if latest and latest.price == price:
+        return latest
+
+    history = PriceHistory(
+        product_id=product.id,
+        price=price,
+        recorded_at=datetime.utcnow()
+    )
+
+    db.add(history)
+    db.commit()
+    db.refresh(history)
+
+    return history
