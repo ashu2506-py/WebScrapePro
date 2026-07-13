@@ -1,19 +1,33 @@
-.venv/
+# Python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
 
+# Virtual Environment
+.venv/
+venv/
+
+# Environment Variables
 .env
 
+# Database
 *.db
 
+# Logs
 logs/
+*.log
 
-exports/
+# Exports
+exports/*.csv
 
+# Pytest
 .pytest_cache/
 
-.coverage
-
+# IDE
 .vscode/
-
 .idea/
+
+# OS
+.DS_Store
+Thumbs.db

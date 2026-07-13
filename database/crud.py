@@ -129,3 +129,34 @@ def add_price_history(
     db.refresh(history)
 
     return history
+
+def create_alert(
+    db: Session,
+    product_name: str,
+    email: str,
+    target_price: float,
+):
+    """
+    Create a price alert using the product name.
+    """
+
+    product = (
+        db.query(Product)
+        .filter(Product.name == product_name)
+        .first()
+    )
+
+    if product is None:
+        raise ValueError(f"Product '{product_name}' not found.")
+
+    alert = AlertConfig(
+        product_id=product.id,
+        email=email,
+        target_price=target_price,
+    )
+
+    db.add(alert)
+    db.commit()
+    db.refresh(alert)
+
+    return alert

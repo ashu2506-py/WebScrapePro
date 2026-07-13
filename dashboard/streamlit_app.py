@@ -12,6 +12,8 @@ from analysis.trends import TrendAnalyzer
 from database.db import SessionLocal
 from database.models import Product
 from exports.csv_export import CSVExporter
+import plotly.express as px
+import pandas as pd
 
 st.set_page_config(
     page_title="WebScrapePro",
@@ -104,24 +106,29 @@ st.dataframe(
 
 # ---------------- Graph ---------------- #
 
-prices = [item.price for item in history]
-dates = [item.recorded_at.strftime("%d-%b") for item in history]
+chart_data = pd.DataFrame({
+    "Date": [item.recorded_at for item in history],
+    "Price": [item.price for item in history]
+})
 
-fig, ax = plt.subplots(figsize=(12,5))
-
-ax.plot(
-    dates,
-    prices,
-    marker="o",
-    linewidth=2
+fig = px.line(
+    chart_data,
+    x="Date",
+    y="Price",
+    title=f"{selected_product.name} Price Trend",
+    markers=True
 )
 
-ax.set_title(f"{selected_product.name} Price Trend")
-ax.set_xlabel("Date")
-ax.set_ylabel("Price (₹)")
-ax.grid(True)
+fig.update_layout(
+    xaxis_title="Date",
+    yaxis_title="Price (₹)",
+    hovermode="x unified"
+)
 
-st.pyplot(fig)
+st.plotly_chart(
+    fig,
+    use_container_width=True
+)
 
 # ---------------- Statistics ---------------- #
 
