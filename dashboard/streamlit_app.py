@@ -14,15 +14,16 @@ from database.models import Product
 from exports.csv_export import CSVExporter
 import plotly.express as px
 import pandas as pd
-
+from components.header import show_header
+from components.sidebar import show_sidebar
+from components.cards import show_product_cards
+from components.overview import show_overview
 st.set_page_config(
     page_title="WebScrapePro",
     page_icon="📈",
     layout="wide"
 )
-
-st.title("📈 WebScrapePro")
-st.subheader("E-Commerce Price Tracker & Alert Engine")
+show_header()
 
 db: Session = SessionLocal()
 
@@ -37,19 +38,14 @@ if not products:
 st.sidebar.title("Navigation")
 st.sidebar.success("WebScrapePro Dashboard")
 st.sidebar.metric("Tracked Products", len(products))
+filtered_products=show_sidebar(products)
+st.subheader("🛍 Products")
 
-product_names = [product.name for product in products]
+selected_product = show_product_cards(filtered_products)
 
-selected_name = st.sidebar.selectbox(
-    "Select Product",
-    product_names
-)
-
-selected_product = next(
-    product for product in products
-    if product.name == selected_name
-)
-
+if selected_product is None:
+    st.info("👈 Select a product by clicking 'View Analytics'.")
+    st.stop()
 st.sidebar.write("---")
 st.sidebar.write(f"**Selected Product:**")
 st.sidebar.write(selected_product.name)
@@ -58,7 +54,7 @@ st.sidebar.write(selected_product.name)
 
 analyzer = TrendAnalyzer(db)
 exporter = CSVExporter()
-
+show_overview(products,analyzer)
 st.header(selected_product.name)
 
 col1, col2, col3, col4 = st.columns(4)
